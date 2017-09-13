@@ -9,6 +9,7 @@ cat >/etc/my.cnf<<EOF
 datadir=/data/mysql
 port=3306
 socket=/tmp/mysql.sock
+pid_file=/data/mysql/mysql.pid
 log_error=error.log
 user=mysql
 skip-name-resolve
@@ -16,6 +17,7 @@ log-bin=mysql-bin
 log-bin-index=mysql-bin.index
 server-id=${SERVER_ID}
 character_set_server=utf8
+log-slave-updates=1
 
 [mysql]
 prompt=(\\u@\\h) [\\d]>\\_
