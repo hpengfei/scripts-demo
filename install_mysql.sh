@@ -1,4 +1,5 @@
 #!/bin/bash
+
 MYSQL_BASEDIR=/usr/local/mysql
 MySQL_DATADIR=/data/mysql
 SERVER_ID=`hostname -I |cut -d'.' -f4`
@@ -21,7 +22,7 @@ prompt=(\\u@\\h) [\\d]>\\_
 
 [client]
 user=root
-password=redhat
+password=
 EOF
 
 COUNT=`ls . |grep mysql-.*-linux-glibc2.5-x86_64.tar.gz |wc -l`
@@ -61,13 +62,12 @@ MYSQL_VERSION_2=`ls . |grep mysql-.*-linux-glibc2.5-x86_64.tar.gz|awk -F'-' '{pr
 case $MYSQL_VERSION_2 in
     5.7 )
     mysql_install && mysqld --initialize --user=mysql 
+    MYSQL_PASSWORD=`grep "root@localhost:" /data/mysql/error.log |awk '{print $NF}'`
+    sed -i s/password=/password=$MYSQL_PASSWORD/ /etc/my.cnf
         ;;
     * )
-    mysql_install && /usr/local/mysql/scripts/mysql_install_db --user=mysql
+    mysql_install && /usr/local/mysql/scripts/mysql_install_db --user=mysql --basedir=${MYSQL_BASEDIR}
         ;;
 esac
-
-MYSQL_PASSWORD=`grep "root@localhost:" /data/mysql/error.log |awk '{print $NF}'`
-sed -i s/password=redhat/password=$MYSQL_PASSWORD/ /etc/my.cnf
-
-/etc/init.d/mysqld start
+source /etc/profile.d/mysql.sh
+/etc/init.d/mysqld start && echo 'Please execute command "source /etc/profile.d/mysql.sh"'
