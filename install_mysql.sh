@@ -2,7 +2,7 @@
 
 MYSQL_BASEDIR=/usr/local/mysql
 MySQL_DATADIR=/data/mysql
-SERVER_ID=`hostname -I |cut -d'.' -f4`
+SERVER_ID=`hostname -I |awk -F'[. ]' '{print $4}'`
 
 cat >/etc/my.cnf<<EOF   
 [mysqld]
@@ -16,6 +16,7 @@ server-id=${SERVER_ID}
 character_set_server=utf8
 gtid_mode=on
 enforce_gtid_consistency=1
+binlog_format=ROW
 
 ## log
 log-bin=mysql-bin
@@ -46,12 +47,12 @@ MYSQL_FILE_NAME=mysql-${MYSQL_VERSION}-linux-glibc2.5-x86_64.tar.gz
 
 function mysql_install () {
     if [[ `rpm -qa libaio |wc -l` -ne 1 ]]; then
-        yum install libaio || echo "install libaio error."
+        yum install libaio autoconf || echo "install libaio error."
         exit
     fi
 
-    id mysql || groupadd -r mysql 
-    id mysql || useradd -r -g mysql -s /sbin/nologin -M mysql
+    id mysql >/dev/null 2>&1|| groupadd -r mysql 
+    id mysql >/dev/null 2>&1|| useradd -r -g mysql -s /sbin/nologin -M mysql
     if [ ! -d /usr/local/mysql-${MYSQL_VERSION}-linux-glibc2.5-x86_64 ];then
         tar xf ${MYSQL_FILE_NAME} -C /usr/local/ && echo "mysql unzip ok."
     fi
